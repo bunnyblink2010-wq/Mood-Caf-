@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="A little wizard cat figures out how you're feeling and hands you the coffee to match." />
+<title>Mood Café</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%98%95%3C/text%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- reusable cat markup, cloned by JS into each screen that needs it -->
+  <template id="catTemplate">
+    <svg class="cat" viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+      <ellipse class="cat-shadow" cx="100" cy="168" rx="52" ry="8"/>
+      <path class="cat-tail" d="M148,140 C185,130 190,90 165,70" stroke-linecap="round" fill="none" stroke-width="14"/>
+      <path class="cat-ear" d="M55,55 L40,15 L75,45 Z"/>
+      <path class="cat-ear" d="M145,55 L160,15 L125,45 Z"/>
+      <path class="cat-ear-inner" d="M58,48 L48,25 L70,42 Z"/>
+      <path class="cat-ear-inner" d="M142,48 L152,25 L130,42 Z"/>
+      <ellipse class="cat-body" cx="100" cy="130" rx="55" ry="40"/>
+      <circle class="cat-head" cx="100" cy="65" r="50"/>
+      <g class="cat-hat">
+        <polygon class="hat-cone" points="74,32 126,32 100,4"/>
+        <ellipse class="hat-brim" cx="100" cy="32" rx="30" ry="7"/>
+        <circle class="hat-star" cx="100" cy="4" r="4"/>
+      </g>
+      <ellipse class="cat-cheek" cx="72" cy="78" rx="10" ry="7"/>
+      <ellipse class="cat-cheek" cx="128" cy="78" rx="10" ry="7"/>
+      <g class="cat-eyes">
+        <ellipse cx="80" cy="66" rx="6" ry="9"/>
+        <ellipse cx="120" cy="66" rx="6" ry="9"/>
+      </g>
+      <path class="cat-nose" d="M95,80 L105,80 L100,87 Z"/>
+      <path class="cat-mouth" d="M100,87 C96,94 88,94 85,89 M100,87 C104,94 112,94 115,89" fill="none" stroke-linecap="round"/>
+      <g class="cat-whiskers">
+        <line x1="30" y1="74" x2="65" y2="78"/>
+        <line x1="30" y1="88" x2="65" y2="88"/>
+        <line x1="170" y1="74" x2="135" y2="78"/>
+        <line x1="170" y1="88" x2="135" y2="88"/>
+      </g>
+      <ellipse class="cat-paw" cx="75" cy="165" rx="14" ry="10"/>
+      <ellipse class="cat-paw" cx="125" cy="165" rx="14" ry="10"/>
+    </svg>
+  </template>
+
+  <!-- ================= HOME / LANDING ================= -->
+  <main id="home" class="screen active">
+    <header class="cafe-header">
+      <h1>Mood Café</h1>
+      <p class="tagline">the wizard cat brews something for exactly how you feel.</p>
+    </header>
+
+    <div class="home-cat" id="homeCat"></div>
+
+    <button id="beginBtn" class="pill-btn pill-btn--big">Let's check what you're feeling ✨</button>
+
+    <footer class="cafe-footer">
+      <button class="icon-btn sound-toggle" aria-label="Toggle sound" title="Toggle sound">🔊</button>
+    </footer>
+  </main>
+
+  <!-- ================= QUIZ ================= -->
+  <section id="quiz" class="screen">
+    <div class="scene-top">
+      <button id="quizBackBtn" class="pill-btn">← back to the café</button>
+      <button class="icon-btn sound-toggle" aria-label="Toggle sound" title="Toggle sound">🔊</button>
+    </div>
+
+    <div class="quiz-wrap">
+      <p class="quiz-progress" id="quizProgress">Question 1 of 6</p>
+      <h2 class="quiz-question" id="quizQuestion"></h2>
+      <div class="quiz-options" id="quizOptions"></div>
+    </div>
+  </section>
+
+  <!-- ================= REVEAL ================= -->
+  <section id="reveal" class="screen">
+    <div class="scene-top">
+      <button id="revealBackBtn" class="pill-btn">← back to the café</button>
+      <button class="icon-btn sound-toggle" aria-label="Toggle sound" title="Toggle sound">🔊</button>
+    </div>
+
+    <div class="reveal-wrap">
+      <div class="reveal-cat" id="revealCat"></div>
+      <p class="reveal-line" id="revealLine">Ahh... I sense space for <strong id="revealEmotion">something</strong>.</p>
+      <div class="reveal-cup" id="revealCup"></div>
+      <p class="reveal-coffee-name" id="revealCoffeeName"></p>
+      <button id="stepInsideBtn" class="pill-btn pill-btn--big">step inside ☕</button>
+      <button id="retakeBtn" class="tiny-link">retake the quiz</button>
+    </div>
+  </section>
+
+  <!-- ================= SCENE ================= -->
+  <section id="scene" class="screen scene">
+    <div class="scene-bg" id="sceneBg" aria-hidden="true"></div>
+
+    <div class="scene-top">
+      <button id="backBtn" class="pill-btn">← back to the café</button>
+      <button class="icon-btn sound-toggle" aria-label="Toggle sound" title="Toggle sound">🔊</button>
+    </div>
+
+    <div class="cat-wrap">
+      <div class="speech-bubble hidden" id="speechBubble">
+        <p id="catMessage" aria-live="polite"></p>
+        <button id="anotherMsgBtn" class="tiny-link">hear another message</button>
+      </div>
+      <div class="ritual-area" id="ritualArea"></div>
+      <div class="scene-cat" id="sceneCat"></div>
+    </div>
+  </section>
+
+<script src="script.js"></script>
+</body>
+</html>
